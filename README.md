@@ -103,9 +103,27 @@ Try the application with sample PDFs including:
 - **Product Thinking (25%)**: Clear user needs, intuitive design, market ready
 - **Execution Quality (20%)**: Polished interface, reliable performance
 
-## Limitations
+## 🔒 Security & Limitations
 
-- Maximum file size: 16MB
-- Supports PDF files only
-- Pattern recognition optimized for English text
-- Accuracy depends on PDF text quality and structure
+### File Upload Security
+- **Strict PDF Validation**: Only genuine PDF files accepted (validates file headers)
+- **File Size Limit**: Maximum 16MB per upload
+- **Extension Validation**: Must have .pdf extension
+- **Content Verification**: Validates PDF magic number (%PDF) to prevent malicious files
+- **Temporary Processing**: Files automatically deleted after processing
+
+### System Limitations
+- **File Format**: PDF files only (no images, Word docs, etc.)
+- **Language**: Pattern recognition optimized for English text
+- **Content Type**: Works best with text-based PDFs (not scanned images)
+- **Processing**: Accuracy depends on PDF text quality and structure
+
+### Example PDFs Available
+The application includes 5 sample PDF files for testing:
+- **Sample Resume**: Multi-contact professional resume
+- **Business Cards Collection**: Multiple business cards in one document
+- **Sample Invoice**: Professional invoice with contact details
+- **Contact Form**: Filled contact form with personal information
+- **Mixed Format Document**: Various document types combined
+
+Each example includes a preview feature so users can see the original content before testing extraction.

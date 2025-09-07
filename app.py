@@ -284,9 +284,36 @@ def list_examples():
     return jsonify({'examples': examples})
 
 @app.route('/examples/<filename>')
-def download_example(filename):
-    """Download example PDF file"""
-    return send_from_directory('static/examples', filename)
+def serve_example(filename):
+    """Serve example PDF files"""
+    try:
+        return send_from_directory('static/examples', filename)
+    except Exception as e:
+        logger.error(f"Error serving example file {filename}: {str(e)}")
+        return jsonify({'error': 'File not found'}), 404
+
+@app.route('/preview/<filename>')
+def preview_example(filename):
+    """Get text preview of example PDF files"""
+    try:
+        filepath = os.path.join('static/examples', filename)
+        if not os.path.exists(filepath):
+            return jsonify({'error': 'File not found'}), 404
+        
+        # Extract text from PDF for preview
+        text = extractor.extract_text_from_pdf(filepath)
+        
+        # Limit preview to first 500 characters
+        preview_text = text[:500] + '...' if len(text) > 500 else text
+        
+        return jsonify({
+            'success': True,
+            'preview': preview_text,
+            'filename': filename
+        })
+    except Exception as e:
+        logger.error(f"Error previewing file {filename}: {str(e)}")
+        return jsonify({'error': 'Preview not available'}), 500
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
@@ -297,8 +324,29 @@ def upload_file():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
     
+    # Enhanced security validation
+    if not file.filename.lower().endswith('.pdf'):
+        return jsonify({'error': 'Invalid file type. Only PDF files are allowed.'}), 400
+    
+    # Check file size (16MB limit)
+    if file.content_length and file.content_length > 16 * 1024 * 1024:
+        return jsonify({'error': 'File size exceeds 16MB limit.'}), 400
+    
+    # Validate file content by reading first few bytes (PDF magic number)
+    file.seek(0)
+    file_header = file.read(4)
+    file.seek(0)  # Reset file pointer
+    
+    if file_header != b'%PDF':
+        return jsonify({'error': 'Invalid PDF file. File may be corrupted or not a valid PDF.'}), 400
+    
     if file and file.filename.lower().endswith('.pdf'):
         filename = secure_filename(file.filename)
+        
+        # Additional filename validation
+        if not filename or filename == '.pdf':
+            filename = f"upload_{int(time.time())}.pdf"
+        
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
         
