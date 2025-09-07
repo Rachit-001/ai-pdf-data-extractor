@@ -12,71 +12,81 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #fafbfc;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 20px;
+            color: #1a1a1a;
         }
 
         .container {
             background: white;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            padding: 40px;
-            max-width: 800px;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.08);
             width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            border: 1px solid #e5e7eb;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 48px;
         }
 
         .header h1 {
-            color: #333;
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 10px;
+            color: #111827;
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
         }
 
         .header p {
-            color: #666;
-            font-size: 1.1rem;
+            color: #6b7280;
+            font-size: 1.125rem;
+            font-weight: 400;
         }
 
         .upload-area {
-            border: 3px dashed #ddd;
-            border-radius: 15px;
-            padding: 60px 20px;
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            padding: 48px 24px;
             text-align: center;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             cursor: pointer;
-            margin-bottom: 30px;
+            margin-bottom: 24px;
+            background: #f9fafb;
+        }
+
+        .upload-area:hover {
+            border-color: #3b82f6;
+            background: #f0f9ff;
         }
 
         .upload-area.dragover {
-            border-color: #667eea;
-            background-color: #f8f9ff;
+            border-color: #3b82f6;
+            background: #eff6ff;
+            transform: scale(1.01);
         }
 
         .upload-icon {
-            font-size: 4rem;
-            color: #ddd;
-            margin-bottom: 20px;
+            font-size: 3rem;
+            color: #9ca3af;
+            margin-bottom: 16px;
         }
 
         .upload-text {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 10px;
+            font-size: 1.125rem;
+            color: #374151;
+            margin-bottom: 8px;
+            font-weight: 600;
         }
 
         .upload-subtext {
-            color: #999;
-            font-size: 0.9rem;
+            color: #6b7280;
+            font-size: 0.875rem;
         }
 
         .file-input {
@@ -84,23 +94,29 @@
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #3b82f6;
             color: white;
             border: none;
-            padding: 12px 30px;
-            border-radius: 25px;
-            font-size: 1rem;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: transform 0.2s ease;
-            margin: 10px;
+            transition: all 0.15s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .btn:hover {
-            transform: translateY(-2px);
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.25);
         }
 
         .btn:disabled {
-            opacity: 0.6;
+            opacity: 0.5;
             cursor: not-allowed;
             transform: none;
         }
@@ -139,11 +155,11 @@
         }
 
         .category-section {
-            margin-bottom: 40px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 25px;
-            border-left: 5px solid #667eea;
+            margin-bottom: 32px;
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
             position: relative;
         }
 
@@ -185,6 +201,8 @@
             display: flex;
             align-items: center;
             margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
         }
 
         .category-icon {
@@ -193,19 +211,45 @@
         }
 
         .category-title {
-            font-size: 1.3rem;
-            font-weight: 600;
-            color: #333;
-            margin: 0;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2c3e50;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .category-count {
-            background: #667eea;
-            color: white;
+            background: #f3f4f6;
+            color: #374151;
             padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            margin-left: 10px;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 12px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .category-main-heading {
+            text-align: center;
+            font-size: 2rem;
+            font-weight: 800;
+            color: #2c3e50;
+            margin: 30px 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: relative;
+        }
+
+        .category-main-heading::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100px;
+            height: 3px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 2px;
         }
 
         .data-table {
@@ -266,11 +310,19 @@
         }
 
         .btn-secondary {
-            background: #6c757d;
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
         }
 
         .btn-success {
-            background: #28a745;
+            background: #10b981;
+        }
+
+        .btn-success:hover {
+            background: #059669;
         }
 
         .error {
@@ -291,6 +343,82 @@
             border: 1px solid #c3e6cb;
         }
 
+        .examples-section {
+            margin-bottom: 32px;
+        }
+
+        .examples-section h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .examples-disclaimer {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 16px;
+            font-style: italic;
+        }
+
+        .examples-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .example-card {
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #ffffff;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: left;
+        }
+
+        .example-card:hover {
+            border-color: #3b82f6;
+            background: #f8fafc;
+            transform: translateY(-1px);
+        }
+
+        .example-card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 4px;
+        }
+
+        .example-card-desc {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+
+        .divider {
+            text-align: center;
+            margin: 24px 0;
+            position: relative;
+        }
+
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #e5e7eb;
+        }
+
+        .divider span {
+            background: white;
+            padding: 0 16px;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -307,6 +435,10 @@
             .export-buttons {
                 flex-direction: column;
             }
+
+            .examples-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -318,6 +450,18 @@
         </div>
 
         <div class="upload-section">
+            <div class="examples-section">
+                <h3>Try Example PDFs</h3>
+                <p class="examples-disclaimer">Sample files for testing purposes only - contains fictional data</p>
+                <div class="examples-grid" id="examplesGrid">
+                    <!-- Examples will be loaded here -->
+                </div>
+            </div>
+            
+            <div class="divider">
+                <span>or upload your own</span>
+            </div>
+            
             <div class="upload-area" id="uploadArea">
                 <div class="upload-icon">📁</div>
                 <div class="upload-text">Drag & drop your PDF file here</div>
@@ -352,6 +496,9 @@
         const loading = document.getElementById('loading');
         const results = document.getElementById('results');
         const dataTableBody = document.getElementById('dataTableBody');
+
+        // Load examples on page load
+        loadExamples();
 
         // Upload area click handler
         uploadArea.addEventListener('click', () => {
@@ -403,40 +550,18 @@
         }
 
         function uploadFile(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-
-            // Show loading
-            document.querySelector('.upload-section').style.display = 'none';
-            loading.style.display = 'block';
-            results.style.display = 'none';
-
-            fetch('/upload', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                loading.style.display = 'none';
-                
-                if (data.success) {
-                    extractedData = data.data;
-                    displayResults(data.data);
-                } else {
-                    showError(data.error || 'An error occurred while processing the PDF.');
-                    document.querySelector('.upload-section').style.display = 'block';
-                }
-            })
-            .catch(error => {
-                loading.style.display = 'none';
-                showError('Network error: ' + error.message);
-                document.querySelector('.upload-section').style.display = 'block';
-            });
+            uploadFileToServer(file);
         }
 
         function displayResults(data) {
             const categorizedResults = document.getElementById('categorizedResults');
             categorizedResults.innerHTML = '';
+            
+            // Add main heading for extracted data
+            const mainHeading = document.createElement('div');
+            mainHeading.className = 'category-main-heading';
+            mainHeading.textContent = 'Extracted Data Categories';
+            categorizedResults.appendChild(mainHeading);
             
             // Category configuration
             const categories = [
@@ -598,6 +723,81 @@
         function clearMessages() {
             const messages = document.querySelectorAll('.error, .success');
             messages.forEach(msg => msg.remove());
+        }
+
+        function loadExamples() {
+            fetch('/examples')
+                .then(response => response.json())
+                .then(data => {
+                    const examplesGrid = document.getElementById('examplesGrid');
+                    examplesGrid.innerHTML = '';
+                    
+                    if (data.examples && data.examples.length > 0) {
+                        data.examples.forEach(example => {
+                            const card = document.createElement('div');
+                            card.className = 'example-card';
+                            card.innerHTML = `
+                                <div class="example-card-title">${example.display_name}</div>
+                                <div class="example-card-desc">Click to test extraction</div>
+                            `;
+                            card.addEventListener('click', () => {
+                                downloadAndProcessExample(example.url, example.name);
+                            });
+                            examplesGrid.appendChild(card);
+                        });
+                    } else {
+                        examplesGrid.innerHTML = '<p style="color: #6b7280; font-size: 0.875rem;">No example files available</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading examples:', error);
+                });
+        }
+
+        function downloadAndProcessExample(url, filename) {
+            // Show loading
+            document.querySelector('.upload-section').style.display = 'none';
+            loading.style.display = 'block';
+            results.style.display = 'none';
+
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const file = new File([blob], filename, { type: 'application/pdf' });
+                    uploadFileToServer(file);
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    showError('Error loading example file: ' + error.message);
+                    document.querySelector('.upload-section').style.display = 'block';
+                });
+        }
+
+        function uploadFileToServer(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.success) {
+                    extractedData = data.data;
+                    displayResults(data.data);
+                } else {
+                    showError(data.error || 'An error occurred while processing the PDF.');
+                    document.querySelector('.upload-section').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                showError('Network error: ' + error.message);
+                document.querySelector('.upload-section').style.display = 'block';
+            });
         }
     </script>
 </body>

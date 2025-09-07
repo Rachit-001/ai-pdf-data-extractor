@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, jsonify, send_file
+from flask import Flask, request, render_template, jsonify, send_file, send_from_directory
 import pdfplumber
 import PyPDF2
 import re
@@ -265,6 +265,29 @@ extractor = PDFDataExtractor()
 def index():
     return render_template('index.html')
 
+@app.route('/examples')
+def list_examples():
+    """List available example PDF files"""
+    examples_dir = os.path.join('static', 'examples')
+    if not os.path.exists(examples_dir):
+        return jsonify({'examples': []})
+    
+    examples = []
+    for filename in os.listdir(examples_dir):
+        if filename.lower().endswith('.pdf'):
+            examples.append({
+                'name': filename,
+                'display_name': filename.replace('_', ' ').replace('.pdf', '').title(),
+                'url': f'/examples/{filename}'
+            })
+    
+    return jsonify({'examples': examples})
+
+@app.route('/examples/<filename>')
+def download_example(filename):
+    """Download example PDF file"""
+    return send_from_directory('static/examples', filename)
+
 @app.route('/upload', methods=['POST'])
 def upload_file():
     if 'file' not in request.files:
@@ -340,31 +363,32 @@ def export_csv():
     if not data:
         return jsonify({'error': 'No data provided'}), 400
     
-    # Create CSV content for multiple values
-    csv_data = []
-    csv_data.append(['Field', 'Value'])
+    # Create CSV in memory with proper handling
+    output = io.StringIO()
+    csv_writer = csv.writer(output)
     
-    # Add array fields
-    for field_name, values in data.items():
-        if isinstance(values, list):
-            if values:  # If list has items
-                for i, value in enumerate(values):
-                    field_display = f"{field_name.title()} {i+1}" if len(values) > 1 else field_name.title()
-                    csv_data.append([field_display, value])
-            else:  # Empty list
-                csv_data.append([field_name.title(), ''])
-        else:
-            csv_data.append([field_name.title(), values])
+    # Get all field types and find the maximum number of entries
+    field_types = ['names', 'emails', 'phones', 'addresses']
+    max_length = max(len(data.get(field, [])) for field in field_types) if any(data.get(field, []) for field in field_types) else 0
     
-    # Create CSV file in memory
-    csv_file = io.StringIO()
-    writer = csv.writer(csv_file)
-    writer.writerows(csv_data)
-    csv_content = csv_file.getvalue()
+    # Write headers (column-wise for better usability)
+    headers = ['Names', 'Email Addresses', 'Phone Numbers', 'Addresses']
+    csv_writer.writerow(headers)
     
-    # Create bytes buffer
-    csv_bytes = io.BytesIO()
-    csv_bytes.write(csv_content.encode('utf-8'))
+    # Write data in columns (each row contains one item from each category)
+    for i in range(max_length):
+        row = []
+        for field in field_types:
+            values = data.get(field, [])
+            if i < len(values):
+                row.append(values[i])
+            else:
+                row.append('')  # Empty cell if no more data in this category
+        csv_writer.writerow(row)
+    
+    # Convert to bytes
+    csv_content = output.getvalue()
+    csv_bytes = io.BytesIO(csv_content.encode('utf-8'))
     csv_bytes.seek(0)
     
     return send_file(
