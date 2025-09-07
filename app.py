@@ -12,13 +12,23 @@ from werkzeug.utils import secure_filename
 from datetime import datetime
 import tempfile
 
-# Configure logging for monitoring
-logging.basicConfig(level=logging.INFO)
+# Environment configuration
+ENV = os.environ.get('FLASK_ENV', 'development').lower()
+IS_PRODUCTION = ENV == 'production' or os.environ.get('PORT') is not None
+
+# Configure logging based on environment
+if IS_PRODUCTION:
+    logging.basicConfig(level=logging.WARNING, format='%(levelname)s: %(message)s')
+else:
+    logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s: %(message)s')
+
 logger = logging.getLogger(__name__)
+logger.info(f"Starting application in {'PRODUCTION' if IS_PRODUCTION else 'DEVELOPMENT'} mode")
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['DEBUG'] = not IS_PRODUCTION
 
 # Create upload directory if it doesn't exist
 if not os.path.exists(app.config['UPLOAD_FOLDER']):
@@ -30,9 +40,24 @@ examples_dir = os.path.join(static_dir, 'examples')
 
 if not os.path.exists(static_dir):
     os.makedirs(static_dir)
+    if not IS_PRODUCTION:
+        logger.info(f"Created static directory: {static_dir}")
+
 if not os.path.exists(examples_dir):
     os.makedirs(examples_dir)
-    logger.warning(f"Created missing examples directory: {examples_dir}")
+    if not IS_PRODUCTION:
+        logger.info(f"Created examples directory: {examples_dir}")
+    
+    # Copy example PDFs if they exist in the project
+    source_examples = os.path.join(os.path.dirname(__file__), 'test_pdfs')
+    if os.path.exists(source_examples):
+        import shutil
+        for filename in os.listdir(source_examples):
+            if filename.endswith('.pdf'):
+                shutil.copy2(os.path.join(source_examples, filename), 
+                           os.path.join(examples_dir, filename))
+                if not IS_PRODUCTION:
+                    logger.info(f"Copied example PDF: {filename}")
 
 # Add static file serving route for production
 @app.route('/static/<path:filename>')
@@ -478,6 +503,19 @@ def export_csv():
     )
 
 if __name__ == '__main__':
-    import os
     port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    
+    if IS_PRODUCTION:
+        # Production mode: Use WSGI server
+        try:
+            from waitress import serve
+            logger.warning(f"Starting production server on port {port}")
+            serve(app, host='0.0.0.0', port=port)
+        except ImportError:
+            logger.error("Waitress not available for production deployment!")
+            app.run(host='0.0.0.0', port=port, debug=False)
+    else:
+        # Development mode: Use Flask dev server with debug
+        logger.info(f"Starting development server on port {port}")
+        logger.info("Debug mode enabled - code changes will auto-reload")
+        app.run(host='0.0.0.0', port=port, debug=True)

@@ -23,11 +23,36 @@ pip install -r requirements.txt
 ```
 
 2. Run the application:
+
+**Development Mode (with debug and auto-reload):**
+```bash
+python run_dev.py
+```
+
+**Production Mode (with WSGI server):**
+```bash
+python run_prod.py
+```
+
+**Auto-detection (recommended):**
 ```bash
 python app.py
 ```
+*Automatically detects environment based on FLASK_ENV or PORT variables*
 
 3. Open your browser and navigate to `http://localhost:5000`
+
+## Environment Configuration
+
+The application automatically switches between development and production modes:
+
+- **Development**: Debug enabled, detailed logging, Flask dev server, auto-reload
+- **Production**: WSGI server, minimal logging, optimized performance
+
+**Manual Control:**
+- Set `FLASK_ENV=development` for dev mode
+- Set `FLASK_ENV=production` for prod mode
+- Or use the dedicated runner scripts: `run_dev.py` or `run_prod.py`
 
 ## Usage
 

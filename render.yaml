@@ -3,7 +3,9 @@ services:
     name: pdf-data-extractor
     env: python
     buildCommand: pip install -r requirements.txt
-    startCommand: python app.py
+    startCommand: waitress-serve --host=0.0.0.0 --port=$PORT app:app
     envVars:
       - key: PYTHON_VERSION
-        value: 3.9.12
+        value: 3.9.16
+      - key: FLASK_ENV
+        value: production
