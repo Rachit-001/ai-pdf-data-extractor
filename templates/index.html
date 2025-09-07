@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Data Extractor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .upload-area {
+            border: 3px dashed #ddd;
+            border-radius: 15px;
+            padding: 60px 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .upload-area.dragover {
+            border-color: #667eea;
+            background-color: #f8f9ff;
+        }
+
+        .upload-icon {
+            font-size: 4rem;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+
+        .upload-text {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            color: #999;
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results h2 {
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .category-section {
+            margin-bottom: 40px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 5px solid #667eea;
+            position: relative;
+        }
+
+        .category-section:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ddd, transparent);
+        }
+
+        .category-separator {
+            margin: 30px 0;
+            text-align: center;
+            position: relative;
+        }
+
+        .category-separator::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, #ccc, transparent);
+        }
+
+        .separator-icon {
+            background: white;
+            padding: 0 15px;
+            color: #999;
+            font-size: 1.2rem;
+        }
+
+        .category-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .category-icon {
+            font-size: 1.5rem;
+            margin-right: 10px;
+        }
+
+        .category-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #333;
+            margin: 0;
+        }
+
+        .category-count {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .data-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .data-table td input {
+            width: 100%;
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .data-table td input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .data-table td em {
+            font-style: italic;
+            color: #999;
+        }
+
+        .field-count {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid #c3e6cb;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .upload-area {
+                padding: 40px 15px;
+            }
+            
+            .export-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📄 PDF Data Extractor</h1>
+            <p>Upload your PDF documents and extract structured data automatically</p>
+        </div>
+
+        <div class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📁</div>
+                <div class="upload-text">Drag & drop your PDF file here</div>
+                <div class="upload-subtext">or click to browse files</div>
+                <input type="file" id="fileInput" class="file-input" accept=".pdf">
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Processing your PDF...</p>
+            </div>
+        </div>
+
+        <div class="results" id="results">
+            <h2>📊 Extracted Data</h2>
+            <div id="categorizedResults"></div>
+            
+            <div class="export-buttons">
+                <button class="btn btn-success" onclick="exportData('json')">📥 Download JSON</button>
+                <button class="btn btn-secondary" onclick="exportData('csv')">📊 Download CSV</button>
+                <button class="btn" onclick="resetForm()">🔄 Upload Another PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let extractedData = {};
+        
+        // DOM elements
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const loading = document.getElementById('loading');
+        const results = document.getElementById('results');
+        const dataTableBody = document.getElementById('dataTableBody');
+
+        // Upload area click handler
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // File input change handler
+        fileInput.addEventListener('change', handleFileSelect);
+
+        // Drag and drop handlers
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            if (!file.type.includes('pdf')) {
+                showError('Please select a PDF file.');
+                return;
+            }
+
+            if (file.size > 16 * 1024 * 1024) {
+                showError('File size must be less than 16MB.');
+                return;
+            }
+
+            uploadFile(file);
+        }
+
+        function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            // Show loading
+            document.querySelector('.upload-section').style.display = 'none';
+            loading.style.display = 'block';
+            results.style.display = 'none';
+
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                loading.style.display = 'none';
+                
+                if (data.success) {
+                    extractedData = data.data;
+                    displayResults(data.data);
+                } else {
+                    showError(data.error || 'An error occurred while processing the PDF.');
+                    document.querySelector('.upload-section').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                loading.style.display = 'none';
+                showError('Network error: ' + error.message);
+                document.querySelector('.upload-section').style.display = 'block';
+            });
+        }
+
+        function displayResults(data) {
+            const categorizedResults = document.getElementById('categorizedResults');
+            categorizedResults.innerHTML = '';
+            
+            // Category configuration
+            const categories = [
+                { key: 'names', title: 'Names', icon: '👤', color: '#667eea' },
+                { key: 'emails', title: 'Email Addresses', icon: '📧', color: '#28a745' },
+                { key: 'phones', title: 'Phone Numbers', icon: '📱', color: '#fd7e14' },
+                { key: 'addresses', title: 'Addresses', icon: '🏠', color: '#6f42c1' }
+            ];
+            
+            categories.forEach((category, index) => {
+                const values = data[category.key] || [];
+                const categorySection = createCategorySection(category, values);
+                categorizedResults.appendChild(categorySection);
+                
+                // Add separator between categories (except after the last one)
+                if (index < categories.length - 1) {
+                    const separator = document.createElement('div');
+                    separator.className = 'category-separator';
+                    separator.innerHTML = '<span class="separator-icon">◆</span>';
+                    categorizedResults.appendChild(separator);
+                }
+            });
+
+            results.style.display = 'block';
+        }
+
+        function createCategorySection(category, values) {
+            const section = document.createElement('div');
+            section.className = 'category-section';
+            section.style.borderLeftColor = category.color;
+            
+            const header = document.createElement('div');
+            header.className = 'category-header';
+            header.innerHTML = `
+                <span class="category-icon">${category.icon}</span>
+                <h3 class="category-title">${category.title}</h3>
+                <span class="category-count">${values.length} found</span>
+            `;
+            section.appendChild(header);
+            
+            if (values.length === 0) {
+                const emptyMessage = document.createElement('p');
+                emptyMessage.style.color = '#999';
+                emptyMessage.style.fontStyle = 'italic';
+                emptyMessage.textContent = `No ${category.title.toLowerCase()} found in the document.`;
+                section.appendChild(emptyMessage);
+            } else {
+                const table = document.createElement('table');
+                table.className = 'data-table';
+                
+                const thead = document.createElement('thead');
+                thead.innerHTML = `
+                    <tr>
+                        <th style="width: 100px;">#</th>
+                        <th>Value</th>
+                    </tr>
+                `;
+                table.appendChild(thead);
+                
+                const tbody = document.createElement('tbody');
+                values.forEach((value, index) => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td><strong>${index + 1}</strong></td>
+                        <td><input type="text" value="${value}" onchange="updateData('${category.key}', ${index}, this.value)" style="width: 100%; border: 1px solid #ddd; padding: 8px; border-radius: 5px;"></td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                table.appendChild(tbody);
+                section.appendChild(table);
+            }
+            
+            return section;
+        }
+
+        function createTableRow(field, value, index, isEmpty) {
+            const row = document.createElement('tr');
+            const displayField = field.charAt(0).toUpperCase() + field.slice(1);
+            const fieldKey = `${field}_${index}`;
+            
+            if (isEmpty) {
+                row.innerHTML = `
+                    <td><strong>${displayField}</strong></td>
+                    <td><em style="color: #999;">No ${field} found</em></td>
+                `;
+            } else {
+                const displayName = extractedData[field] && extractedData[field].length > 1 ? 
+                    `${displayField} ${index + 1}` : displayField;
+                row.innerHTML = `
+                    <td><strong>${displayName}</strong></td>
+                    <td><input type="text" value="${value}" onchange="updateData('${field}', ${index}, this.value)"></td>
+                `;
+            }
+            return row;
+        }
+
+        function updateData(field, index, value) {
+            if (!extractedData[field]) {
+                extractedData[field] = [];
+            }
+            
+            // Ensure array is large enough
+            while (extractedData[field].length <= index) {
+                extractedData[field].push('');
+            }
+            
+            extractedData[field][index] = value;
+        }
+
+        function exportData(format) {
+            fetch(`/export/${format}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(extractedData)
+            })
+            .then(response => response.blob())
+            .then(blob => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = `extracted_data.${format}`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            })
+            .catch(error => {
+                showError('Export failed: ' + error.message);
+            });
+        }
+
+        function resetForm() {
+            document.querySelector('.upload-section').style.display = 'block';
+            results.style.display = 'none';
+            fileInput.value = '';
+            extractedData = {};
+            clearMessages();
+        }
+
+        function showError(message) {
+            clearMessages();
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            document.querySelector('.container').insertBefore(errorDiv, document.querySelector('.upload-section'));
+        }
+
+        function showSuccess(message) {
+            clearMessages();
+            const successDiv = document.createElement('div');
+            successDiv.className = 'success';
+            successDiv.textContent = message;
+            document.querySelector('.container').insertBefore(successDiv, document.querySelector('.upload-section'));
+        }
+
+        function clearMessages() {
+            const messages = document.querySelectorAll('.error, .success');
+            messages.forEach(msg => msg.remove());
+        }
+    </script>
+</body>
+</html>
