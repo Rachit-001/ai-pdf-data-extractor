@@ -20,8 +20,26 @@ app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 app.config['UPLOAD_FOLDER'] = 'uploads'
 
-# Create uploads directory if it doesn't exist
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+# Create upload directory if it doesn't exist
+if not os.path.exists(app.config['UPLOAD_FOLDER']):
+    os.makedirs(app.config['UPLOAD_FOLDER'])
+
+# Ensure static directories exist for production
+static_dir = os.path.join(os.path.dirname(__file__), 'static')
+examples_dir = os.path.join(static_dir, 'examples')
+
+if not os.path.exists(static_dir):
+    os.makedirs(static_dir)
+if not os.path.exists(examples_dir):
+    os.makedirs(examples_dir)
+    logger.warning(f"Created missing examples directory: {examples_dir}")
+
+# Add static file serving route for production
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static files"""
+    static_dir = os.path.join(os.path.dirname(__file__), 'static')
+    return send_from_directory(static_dir, filename)
 
 class PDFDataExtractor:
     def __init__(self):
@@ -268,11 +286,13 @@ def index():
 @app.route('/examples')
 def list_examples():
     """List available example PDF files"""
-    examples_dir = os.path.join('static', 'examples')
+    examples_dir = os.path.join(os.path.dirname(__file__), 'static', 'examples')
+    examples = []
+    
     if not os.path.exists(examples_dir):
+        logger.warning(f"Examples directory not found: {examples_dir}")
         return jsonify({'examples': []})
     
-    examples = []
     for filename in os.listdir(examples_dir):
         if filename.lower().endswith('.pdf'):
             examples.append({
@@ -281,13 +301,21 @@ def list_examples():
                 'url': f'/examples/{filename}'
             })
     
+    logger.info(f"Found {len(examples)} example files in {examples_dir}")
     return jsonify({'examples': examples})
 
 @app.route('/examples/<filename>')
 def serve_example(filename):
     """Serve example PDF files"""
     try:
-        return send_from_directory('static/examples', filename)
+        examples_dir = os.path.join(os.path.dirname(__file__), 'static', 'examples')
+        filepath = os.path.join(examples_dir, filename)
+        
+        if not os.path.exists(filepath):
+            logger.error(f"Example file not found: {filepath}")
+            return jsonify({'error': 'File not found'}), 404
+            
+        return send_from_directory(examples_dir, filename)
     except Exception as e:
         logger.error(f"Error serving example file {filename}: {str(e)}")
         return jsonify({'error': 'File not found'}), 404
@@ -296,8 +324,11 @@ def serve_example(filename):
 def preview_example(filename):
     """Get text preview of example PDF files"""
     try:
-        filepath = os.path.join('static/examples', filename)
+        examples_dir = os.path.join(os.path.dirname(__file__), 'static', 'examples')
+        filepath = os.path.join(examples_dir, filename)
+        
         if not os.path.exists(filepath):
+            logger.error(f"Preview file not found: {filepath}")
             return jsonify({'error': 'File not found'}), 404
         
         # Extract text from PDF for preview
