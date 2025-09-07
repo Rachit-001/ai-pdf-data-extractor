@@ -32,7 +32,9 @@ instance/
 
 # Uploads
 uploads/
-*.pdf
+
+# Example PDFs should be included in deployment
+# *.pdf
 
 # IDE
 .vscode/

@@ -47,17 +47,56 @@ if not os.path.exists(examples_dir):
     os.makedirs(examples_dir)
     if not IS_PRODUCTION:
         logger.info(f"Created examples directory: {examples_dir}")
+
+# Always ensure example PDFs are available in production
+example_files_exist = any(f.endswith('.pdf') for f in os.listdir(examples_dir) if os.path.isfile(os.path.join(examples_dir, f)))
+
+if not example_files_exist:
+    # Try to copy from various possible locations
+    possible_sources = [
+        os.path.join(os.path.dirname(__file__), 'test_pdfs'),
+        os.path.join(os.path.dirname(__file__), 'static', 'examples'),
+        'test_pdfs'
+    ]
     
-    # Copy example PDFs if they exist in the project
-    source_examples = os.path.join(os.path.dirname(__file__), 'test_pdfs')
-    if os.path.exists(source_examples):
-        import shutil
-        for filename in os.listdir(source_examples):
-            if filename.endswith('.pdf'):
-                shutil.copy2(os.path.join(source_examples, filename), 
-                           os.path.join(examples_dir, filename))
-                if not IS_PRODUCTION:
-                    logger.info(f"Copied example PDF: {filename}")
+    import shutil
+    copied_files = 0
+    
+    for source_dir in possible_sources:
+        if os.path.exists(source_dir) and source_dir != examples_dir:
+            for filename in os.listdir(source_dir):
+                if filename.endswith('.pdf'):
+                    try:
+                        shutil.copy2(os.path.join(source_dir, filename), 
+                                   os.path.join(examples_dir, filename))
+                        copied_files += 1
+                        if not IS_PRODUCTION:
+                            logger.info(f"Copied example PDF: {filename}")
+                    except Exception as e:
+                        if not IS_PRODUCTION:
+                            logger.warning(f"Failed to copy {filename}: {e}")
+            if copied_files > 0:
+                break
+    
+    # If no files found, create minimal example PDFs programmatically
+    if copied_files == 0 and IS_PRODUCTION:
+        try:
+            from reportlab.pdfgen import canvas
+            from reportlab.lib.pagesizes import letter
+            
+            # Create a simple sample resume PDF
+            sample_path = os.path.join(examples_dir, 'sample_resume.pdf')
+            c = canvas.Canvas(sample_path, pagesize=letter)
+            c.drawString(100, 750, "JOHN DOE")
+            c.drawString(100, 730, "Software Engineer")
+            c.drawString(100, 700, "Email: john.doe@email.com")
+            c.drawString(100, 680, "Phone: (555) 123-4567")
+            c.drawString(100, 660, "Address: 123 Main St, City, ST 12345")
+            c.save()
+            
+            print("Created sample PDF for production")
+        except ImportError:
+            print("ReportLab not available - example PDFs may be missing")
 
 # Add static file serving route for production
 @app.route('/static/<path:filename>')
@@ -509,7 +548,7 @@ if __name__ == '__main__':
         # Production mode: Use WSGI server
         try:
             from waitress import serve
-            logger.warning(f"Starting production server on port {port}")
+            print(f"Starting production server on port {port}")
             serve(app, host='0.0.0.0', port=port)
         except ImportError:
             logger.error("Waitress not available for production deployment!")

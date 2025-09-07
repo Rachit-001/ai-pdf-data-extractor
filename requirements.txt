@@ -5,3 +5,4 @@ Werkzeug==2.3.7
 requests==2.31.0
 waitress==2.1.2
 regex==2023.8.8
+reportlab==4.0.4
